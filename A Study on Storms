@@ -1,0 +1,208 @@
+Data Visualization on Reported Storms
+================
+A Study by Richard Ngo
+Dated: 10/18/2019
+
+-----
+
+In this study, I performed data manipulation and key data
+visualization techniques on storm occurences from 2010 to 2015.
+
+After compiling this data into one csv file, I worked with specific
+storm attributes such as:
+
+  - serial number
+  - date of records
+  - storm basins and subbasins
+  - types of storm
+  - latitude/longitude
+  - wind speed
+  - wind pressure
+
+Using these attributes, we note several interesting facts that were discovered
+during the analysis part of the workout. For most of my observations,
+we refer to the output folder that contains a majority of our summary
+statistics as well as compare theme to code/graphs created.
+
+  - From my summary statistics, I can conclude that there are a total
+    of ***578 unique storm*** names in these accumulating years. We can
+    categorize which storms occurred in which part of the hemisphere
+    with the follow code chunk:
+
+<!-- end list -->
+
+``` r
+## north hemisphere storms
+north_hem <- summarise(
+  group_by( 
+    filter(dat, Latitude > 0), Name))
+
+nrow(north_hem) 
+```
+
+    ## [1] 361
+
+``` r
+## south hemisphere storms
+south_hem <- summarise(
+  group_by( 
+    filter(dat, Latitude < 0), Name))
+
+nrow(south_hem) 
+```
+
+    ## [1] 137
+
+  - Likewise, we can also find ***which storms passed through the
+    equator*** in a similar fashion:
+
+<!-- end list -->
+
+``` r
+select(
+  filter(
+    summarise(
+      group_by(
+        rbind(north_hem, south_hem), Name), count = n()), count > 1), Name)
+```
+
+    ## # A tibble: 7 x 1
+    ##   Name  
+    ##   <chr> 
+    ## 1 CARLOS
+    ## 2 COLIN 
+    ## 3 KATE  
+    ## 4 PAUL  
+    ## 5 SANDRA
+    ## 6 SEAN  
+    ## 7 TOMAS
+
+  - In terms of storm records, 2010 holds the least amount with ***2787
+    counts*** while 2015 holds the greatest amount with ***3810
+    counts***. From our ***records-per-year*** text file, we also find
+    that that amount of storm records increased upon each year.
+
+  - From our ***data-summary*** text file, we find various findings on
+    the storm positions (longitude, latitude), wind speeds, and pressure
+    values. As an example, the maximum wind speed is shown to be ***185
+    kt*** and the minimum pressure at ***872***. To check to see whether
+    or not these values are true in addition to which storm name
+    correlates to them, we may provide the following code chunk:
+
+<!-- end list -->
+
+``` r
+## max wind speed
+summarise(
+  group_by(
+    filter(na.omit(dat), `Wind(WMO)` == max(`Wind(WMO)`)), Name, `Wind(WMO)`))
+```
+
+    ## # A tibble: 1 x 2
+    ## # Groups:   Name [1]
+    ##   Name     `Wind(WMO)`
+    ##   <chr>          <dbl>
+    ## 1 PATRICIA         185
+
+``` r
+## min wind pressure
+summarise(
+  group_by(
+    filter(na.omit(dat), `Pres(WMO)` == min(`Pres(WMO)`)), Name, `Pres(WMO)`))
+```
+
+    ## # A tibble: 1 x 2
+    ## # Groups:   Name [1]
+    ##   Name     `Pres(WMO)`
+    ##   <chr>          <dbl>
+    ## 1 PATRICIA         872
+
+-----
+
+The following questions will be narratively answered as we take a look
+at the graphs we observed from the data visualization portion of our
+study:
+
+  - **Do storms tend to occur uniformly throughout the year?**
+  - **Are there months where there’s more storm activity?**
+  - **Is there a particular Basin where storms occur more frequently?**
+  - **Are there basins without much storm activity?**
+  - **What is the correlation between wind speed and wind pressure?**
+
+For the first two questions, let us refer to this barchart of the storm
+record counts held in each
+month:
+
+<img src="../images/storm-record-by-month.png" style="display: block; margin: auto;" />
+
+Although it is close, ***August*** holds the “record” for most storm
+records in a month with April and May having the least amount of
+records. From the plot, we can see that storms do not often occur
+uniformly throughout year.
+
+-----
+
+We now refer to this mapping of the trajectories of all storm records
+throughout the given
+years:
+
+<img src="../images/map-all-storms.png" style="display: block; margin: auto;" />
+
+Note that most storm records had occured around the area between North
+and South America and in between Africa, Asia, and Austrailia. Areas
+furthest from the equator such as Antartica, the upper portion of North
+America, and Europe have the least amount of storm occurrences around
+them.
+
+In addition, we find that the ***South Atlantic Basin*** has the least
+amount of storm occurences while the ***Western Pacific Basin*** has the
+most. This observation coincides with what we have in our
+**basin-frequencies** text file.
+
+-----
+
+The next two graphs are a direct comparison between storms in the
+Eastern Pacific region and the North Atlantic region. *As a sidenote
+provided by Professor Sanchez, it is informative to know that the North
+Atlantic and Eastern Pacific are overlapping boundaries that allow
+storms to make landfall and move inland without crossing basins.* We
+determine a *basin change* only if the storm emerges over the opposite
+ocean.
+
+Let us then refer to the graph storm records around the Eastern Pacific
+boundaries and the North Atlantic boundaries (both by year and by
+month):
+
+<img src="../images/map-ep-na-storms-by-year.png" style="display: block; margin: auto;" />
+
+<img src="../images/map-ep-na-storms-by-month.png" style="display: block; margin: auto;" />
+
+As we can see from the graphs that are ***facetted by year***, the
+Eastern Pacific and North Atlantic boundaries indeed partly cover one
+another with storm colors being grouped together to exhibit their
+occurence from opposite oceans. Likewise, if we refer to the graphs that
+are ***facetted by month***, we notice storms in both these regions
+occur less often during the winter/spring (so much as not at all during
+February, March, and April) and more often during the summer.
+
+-----
+
+Lastly, we turn our attention to a further graph that plots a
+correlection between pressure and wind values of all
+storms:
+
+<img src="../images/wind_speed_pressure.png" style="display: block; margin: auto;" />
+
+As we can see, there is a negative correlation between pressure values
+and wind values with each storm type having hardly any outliers. It is
+interesting to also note that certain storm types tend to clump over a
+small radius of pressure and wind values (DS and ET).
+
+-----
+
+**Conclusion:** While not every detailed observation of the storms were
+made, I showed various findings that are not easily shown from the raw
+data we were given. By playing around with this data and making astute
+observations on what I’ve manipulated, we can find information about
+data-intensive topics, such as storms, very accesible and readible for a
+more general audience.
